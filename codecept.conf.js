@@ -6,7 +6,7 @@ exports.config = {
   helpers: {
     Playwright: {
       browser: 'chromium',
-      url: 'https://www.liverpool.com.mx',
+      url: process.env.BASE_URL,
       show: true
     }
   },
