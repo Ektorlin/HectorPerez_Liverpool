@@ -1,0 +1,18 @@
+{
+  "name": "nuevo-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "devDependencies": {
+    "@codeceptjs/allure-legacy": "^1.0.2",
+    "allure-commandline": "^2.43.0",
+    "codeceptjs": "^4.1.0",
+    "dotenv": "^17.4.2",
+    "playwright": "^1.62.1"
+  }
+}
