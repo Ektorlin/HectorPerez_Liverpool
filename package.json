@@ -2,9 +2,13 @@
   "name": "nuevo-framework",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "codeceptjs run --steps",
+    "test:dry": "codeceptjs dry-run",
+    "report": "allure serve output/allure-results",
+    "report:generate": "allure generate output/allure-results -o allure-report --clean",
+    "report:serve": "cd allure-report && python3 -m http.server 8080",
+    "report": "npm run report:generate && npm run report:serve"
   },
   "keywords": [],
   "type": "commonjs",

@@ -1,5 +1,9 @@
 require('dotenv').config({ path: './secreto.env' })
 
+if (!process.env.BASE_URL) {
+  throw new Error('Falta BASE_URL en secreto.env — copia secreto.env.example')
+}
+
 /** @type {CodeceptJS.MainConfig} */
 exports.config = {
   output: './output',
@@ -7,7 +11,13 @@ exports.config = {
     Playwright: {
       browser: 'chromium',
       url: process.env.BASE_URL,
-      show: true
+      show: true,
+      waitForNavigation: 'domcontentloaded',
+      waitForTimeout: 15000,
+      video: true,
+      keepVideoForPassedTests: true,
+      trace: true,
+      keepTraceForPassedTests: true
     }
   },
   include: {
@@ -34,11 +44,11 @@ exports.config = {
     },
     retryFailedStep: {
       enabled: true
-    },
-    screenshotOnFail: {},
+    }
+/*     screenshotOnFail: {},
     pauseOn: {},
     browser: {},
-    aiTrace: {}
+    aiTrace: {} */
   },
   stepTimeout: 0,
   stepTimeoutOverride: [{

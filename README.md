@@ -1,0 +1,1 @@
+copiar secreto.env.example a secreto.env y llenarlo
