@@ -10,7 +10,9 @@ permissions:
 
 jobs:
   pruebas:
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
+    container:
+      image: node:22
 
     steps:
       - name: Clonar repositorio
