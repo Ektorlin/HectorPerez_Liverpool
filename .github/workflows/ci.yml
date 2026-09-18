@@ -11,8 +11,6 @@ permissions:
 jobs:
   pruebas:
     runs-on: ubuntu-latest
-    container:
-      image: node:22
 
     steps:
       - name: Clonar repositorio
@@ -35,6 +33,7 @@ jobs:
       - name: Ejecutar pruebas
         env:
           BASE_URL: https://www.liverpool.com.mx
+          HEADLESS: 'true'
         run: npx codeceptjs run --features --steps --grep '@pendiente' --invert
 
       - name: Obtener historial de Allure
