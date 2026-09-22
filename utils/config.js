@@ -10,7 +10,7 @@ function requerida(nombre) {
   const valor = process.env[nombre]
   if (!valor) {
     throw new Error(
-      `Falta la variable "${nombre}" en secreto.env. Copia secreto_env.example y complétala.`
+      `Falta la variable "${nombre}" en secreto.env. Copia secreto.env.example y complétala.`
     )
   }
   return valor

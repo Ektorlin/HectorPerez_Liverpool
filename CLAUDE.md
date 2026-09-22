@@ -63,6 +63,6 @@ No `I.wait(n)` and no `waitForLoadState('networkidle')` (Liverpool's analytics k
 
 ## Gotchas
 
-- `secreto.env` (git-ignored) holds `BASE_URL` and `TIMEOUT` (seconds, default 15, read by `utils/config.js`); only `secreto.env.example` is committed. The error message in `utils/config.js` mentions `secreto_env.example` — the real filename is `secreto.env.example`.
+- `secreto.env` (git-ignored) holds `BASE_URL` and `TIMEOUT` (seconds, default 15, read by `utils/config.js`); only `secreto.env.example` is committed.
 - `test-results/` is a tracked leftover from an unrelated Playwright project (playlist test); ignore it.
 - `output/` and `allure-report/` are generated and git-ignored.
