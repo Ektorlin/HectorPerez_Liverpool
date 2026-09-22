@@ -14,14 +14,28 @@ if (!process.env.BASE_URL) {
  */
 const GRABAR_EVIDENCIA = process.env.EVIDENCIA !== 'false'
 
+/**
+ * Akamai (CDN de Liverpool) responde 403 "Access Denied" al navegador headless.
+ * Hacen falta DOS cosas para pasar, cada una por separado no basta:
+ *   1. `channel: 'chromium'` -> Chromium completo en modo headless "nuevo",
+ *      no el binario reducido chromium-headless-shell.
+ *   2. Un user-agent sin "HeadlessChrome".
+ * Con navegador visible (local) no se toca el user-agent.
+ */
+const HEADLESS = process.env.HEADLESS === 'true'
+const USER_AGENT_HEADLESS =
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36'
+
 /** @type {CodeceptJS.MainConfig} */
 exports.config = {
   output: './output',
   helpers: {
     Playwright: {
       browser: 'chromium',
+      channel: 'chromium',
+      userAgent: HEADLESS ? USER_AGENT_HEADLESS : undefined,
       url: process.env.BASE_URL,
-      show: process.env.HEADLESS !== 'true',
+      show: !HEADLESS,
       restart: 'context',
       waitForNavigation: 'domcontentloaded',
       waitForTimeout: 15000,
