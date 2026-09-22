@@ -16,7 +16,10 @@ const SELECTORES = {
   textoAcordeonPrecio: /precio/i,
   inputPrecioMinimo: '[data-testid="at-text-min-input"]:visible',
   inputPrecioMaximo: '[data-testid="at-text-max-input"]:visible',
-  botonAplicar: 'button:visible:has-text("Aplicar"), button:visible:has-text("Ver resultados")',
+  // El facet de precio NO tiene botón "Aplicar": se aplica con un botón de
+  // ícono (chevron) junto a los inputs. Enter en el input no hace nada.
+  botonAplicarPrecio: '[data-testid="chevron-right-icon-btn"]',
+  facetDePrecio: 'xpath=ancestor::*[.//*[@data-testid="chevron-right-icon-btn"]][1]',
   opcionesOrden:
     '[role="option"], [role="menuitem"], [data-testid*="sorting" i] li, [data-testid*="sorting" i] button',
   listaResultados: '#plp-page-card-product-list'
@@ -103,27 +106,31 @@ class FilterPage extends BasePage {
    * Se verifica el valor real del input después de escribirlo (inputValue)
    * porque el panel se re-renderiza y puede descartar lo escrito: mismo
    * patrón que ya usa SearchPage.buscarProducto().
+   *
+   * El rango se aplica con el chevron del propio facet. Una versión anterior
+   * buscaba un botón "Aplicar" que no existe y caía a Enter, que el sitio
+   * ignora: el filtro nunca se aplicaba y TC-009 fallaba "por el sitio".
    */
   async filtrarPorRangoDePrecio(minimo, maximo) {
     await this.descartarModales()
 
     await I.usePlaywrightTo(`filtrar por precio entre ${minimo} y ${maximo}`, async ({ page }) => {
-      let campoMinimo = page.locator(SELECTORES.inputPrecioMinimo).first()
+      const campoMinimo = page.locator(SELECTORES.inputPrecioMinimo).first()
 
       // El facet puede venir colapsado: se abre SÓLO si hace falta.
-      if ((await campoMinimo.count()) === 0) {
-        const acordeon = page
+      // (isVisible() es una foto instantánea; waitFor sí respeta el timeout.)
+      const facetAbierto = await campoMinimo
+        .waitFor({ state: 'visible', timeout: 5000 })
+        .then(() => true)
+        .catch(() => false)
+
+      if (!facetAbierto) {
+        await page
           .locator(SELECTORES.acordeonPrecio)
           .filter({ hasText: SELECTORES.textoAcordeonPrecio })
           .first()
-
-        await acordeon.click()
-        await page
-          .locator(SELECTORES.inputPrecioMinimo)
-          .first()
-          .waitFor({ state: 'visible', timeout: 10000 })
-
-        campoMinimo = page.locator(SELECTORES.inputPrecioMinimo).first()
+          .click()
+        await campoMinimo.waitFor({ state: 'visible', timeout: 10000 })
       }
 
       const campoMaximo = page.locator(SELECTORES.inputPrecioMaximo).first()
@@ -146,13 +153,13 @@ class FilterPage extends BasePage {
           continue
         }
 
-        const aplicar = page.locator(SELECTORES.botonAplicar).first()
+        const aplicar = campoMinimo
+          .locator(SELECTORES.facetDePrecio)
+          .locator(`${SELECTORES.botonAplicarPrecio}:visible`)
+          .first()
 
-        if ((await aplicar.count()) > 0) {
-          await aplicar.click()
-        } else {
-          await campoMaximo.press('Enter')
-        }
+        await aplicar.waitFor({ state: 'visible', timeout: 10000 })
+        await aplicar.click()
 
         await esperarActualizacionDeResultados(page, urlAnterior)
         return

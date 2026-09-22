@@ -17,20 +17,13 @@ Feature: Filtros y ordenamiento de resultados en Liverpool
       | producto   |
       | zapatillas |
 
-  # PENDIENTE — ver "Limitaciones conocidas" en el README.
-  # El orden descendente devuelve 3 tarjetas (índices 0, 31, 49) cuyo precio
-  # rompe la secuencia. Causa no confirmada; el mismo Page Object y el mismo
-  # parser validan correctamente el orden ascendente sobre la misma PLP.
-  @TC-018 @pendiente
+  @TC-018
   Scenario: Ordenar los resultados de mayor a menor precio
     When busca el producto "zapatillas"
     And ordena los resultados por "mayor precio"
     Then los precios mostrados están ordenados de forma "descendente"
 
-  # PENDIENTE — ver "Limitaciones conocidas" en el README.
-  # El facet de precio acepta los valores pero no aplica el filtro:
-  # el conjunto de resultados es idéntico al no filtrado.
-  @TC-007 @TC-008 @TC-009 @pendiente
+  @TC-007 @TC-008 @TC-009
   Scenario Outline: Filtrar los resultados por un rango de precio
     When busca el producto "<producto>"
     And filtra los resultados por un precio entre <minimo> y <maximo>

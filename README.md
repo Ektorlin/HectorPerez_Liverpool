@@ -174,8 +174,8 @@ antes de leerlo.
 | `busqueda.feature` | Buscar un producto inexistente | TC-002 | ✅ |
 | `busqueda.feature` | Los resultados corresponden a la búsqueda | TC-003 | ✅ |
 | `filtros.feature` | Ordenar de menor a mayor precio | TC-016, TC-017 | ✅ |
-| `filtros.feature` | Ordenar de mayor a menor precio | TC-018 | ⚠️ pendiente |
-| `filtros.feature` | Filtrar por rango de precio | TC-007, TC-008, TC-009 | ⚠️ pendiente |
+| `filtros.feature` | Ordenar de mayor a menor precio | TC-018 | ✅ |
+| `filtros.feature` | Filtrar por rango de precio | TC-007, TC-008, TC-009 | ✅ |
 | `detalle_producto.feature` | Abrir el detalle del producto | TC-020 | ✅ |
 | `detalle_producto.feature` | Validar nombre, precio y descripción | TC-021 | ✅ |
 | `carrito.feature` | Agregar producto y validar el contador | TC-029, TC-030, TC-031 | ✅ |
@@ -255,30 +255,23 @@ aplicados. Incluirlos produciría fallos que no corresponden a un defecto.
 
 ## Limitaciones conocidas
 
-Los escenarios marcados `@pendiente` quedan excluidos de `npm test`. Son
-comportamientos del sitio, no fallas de arquitectura: usan los mismos Page
-Objects y el mismo parser que los escenarios en verde.
+Los escenarios marcados `@pendiente` quedan excluidos de `npm test`. El tag
+se reserva para comportamientos del sitio, no para fallas del framework.
+**Hoy ningún escenario está pendiente.**
 
-### 1. Ordenamiento descendente por precio (`@TC-018`)
+Los dos que lo estuvieron resultaron ser fallas del framework, no del sitio:
 
-Al ordenar de mayor a menor, 3 de 56 tarjetas rompen la secuencia:
+- **Filtro por rango de precio (TC-007/008/009).** El facet de precio no tiene
+  botón "Aplicar": se aplica con un botón de ícono
+  (`chevron-right-icon-btn`). `FilterPage` no lo encontraba y caía a Enter,
+  que el sitio ignora, así que el filtro nunca se aplicaba.
+- **Orden descendente (TC-018).** Tras ordenar o filtrar, la URL cambia
+  *antes* de que el grid se re-renderice; una lectura inmediata podía mezclar
+  tarjetas viejas con nuevas. `ResultsPage.obtenerPrecios()` ahora relee
+  (`esperarCondicion`) hasta que la condición se cumple o se agotan los
+  intentos, y la aserción reporta la última lectura.
 
-```
-índice  0 → 1199    (esperado: el precio más alto)
-índice 31 → 5943    (entre 6839.2 y 6599)
-índice 49 → 1394    (entre 6293 y 6223)
-```
-
-Las otras 53 están perfectamente ordenadas. El **mismo** Page Object y el
-**mismo** parser validan sin error el orden ascendente sobre esa misma PLP
-(56/56 correctas), lo que descarta un fallo de parseo sistemático.
-
-### 2. Filtro por rango de precio (`@TC-007/008/009`)
-
-El facet acepta los valores y los refleja en la UI, pero el conjunto de
-resultados es idéntico al no filtrado.
-
-### 3. TC-042 (disminuir cantidad) no automatizado
+### TC-042 (disminuir cantidad) no automatizado
 
 Con cantidad 1 el botón de disminuir elimina la línea en lugar de decrementar,
 así que un escenario para TC-042 tendría que partir de una cantidad mayor a 1.

@@ -73,8 +73,8 @@ observable consequence of the action you just took:
 - A navigation → `page.waitForURL(pattern, { timeout })`, as in `BasePage.esperarUrl()` and
   `SearchPage.buscarProducto()`.
 - A value that should change (quantity, subtotal, item count) → **poll the value itself** until it
-  satisfies a condition, don't guess a delay. `step_definitions`/`pages/CartPage.js` factors this into
-  `esperarCondicion(leer, condicion, intentos)`: it re-reads with the real getter every ~500ms and
+  satisfies a condition, don't guess a delay. `utils/esperas.js` factors this into
+  `esperarCondicion(leer, condicion, intentos)` (used by `CartPage` and `ResultsPage.obtenerPrecios()`): it re-reads with the real getter every ~500ms and
   returns the last value read (so a failed assertion shows *what it actually saw*, not a bare timeout).
   Reuse or mirror this helper for any new "wait for state X to become Y" need rather than inventing a
   fresh polling loop or, worse, a fixed wait.
@@ -102,8 +102,9 @@ Every `Scenario` needs:
   e.g. `@TC-029 @TC-030 @TC-031` when one flow verifies multiple cases at once).
 - `@smoke` only if it belongs in the quick regression set (`npm run test:smoke`).
 - `@pendiente` **only** when the scenario fails due to documented live-site behavior, not a framework
-  bug — see the list in `CLAUDE.md` (TC-018 descending sort, TC-007/008/009 price-range filter). Don't
-  add `@pendiente` to dodge a real bug, and don't "fix" an existing `@pendiente` scenario by loosening
+  bug. None are pending today: TC-018 and TC-007/008/009 were once tagged "site behavior" but were
+  framework bugs (a missing apply button, a stale-grid read), so probe the live DOM with a `scripts/`
+  diagnostic before blaming the site. Don't add `@pendiente` to dodge a real bug, and don't "fix" an existing `@pendiente` scenario by loosening
   its assertion — the site behavior is the thing that's wrong, not the check.
 
 ## Gotchas specific to testing a live production site

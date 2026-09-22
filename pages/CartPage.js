@@ -3,6 +3,7 @@ const { I } = inject()
 const BasePage = require('./BasePage')
 const contexto = require('../utils/contexto')
 const { parsearPrecio } = require('../utils/precio')
+const { esperarCondicion } = require('../utils/esperas')
 
 /**
  * SELECTORES REALES, confirmados con scripts/inspeccionar-carrito.js.
@@ -43,29 +44,6 @@ const TEXTO_BOLSA_VACIA =
   /(bolsa|carrito)[^.]{0,40}(vac[íi]a|vac[íi]o)|no (tienes|hay)[^.]{0,40}(productos|art[íi]culos)|a[úu]n no has agregado/i
 
 const TEXTO_CONFIRMAR_BORRADO = /s[íi],? eliminar|confirmar|aceptar|s[íi], quitar/i
-
-const INTENTOS = 20
-const ESPERA_MS = 500
-
-const pausa = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-
-/**
- * Espera explícita sobre una CONDICIÓN, no sobre el reloj.
- * Relee el valor real hasta que cumple, y corta en cuanto cumple. Si nunca
- * cumple devuelve el último valor leído, para que la aserción pueda decir
- * exactamente qué encontró en lugar de un timeout mudo.
- */
-async function esperarCondicion(leer, condicion, intentos = INTENTOS) {
-  let ultimo = null
-
-  for (let i = 0; i < intentos; i++) {
-    ultimo = await leer()
-    if (condicion(ultimo)) return ultimo
-    await pausa(ESPERA_MS)
-  }
-
-  return ultimo
-}
 
 class CartPage extends BasePage {
   /* ------------------------------------------------------------------ *

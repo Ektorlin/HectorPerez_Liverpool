@@ -47,12 +47,12 @@ Cross-cutting pieces that span several files:
 
 ## Waiting conventions
 
-No `I.wait(n)` and no `waitForLoadState('networkidle')` (Liverpool's analytics keep the network busy forever). Wait for a direct consequence of the action: `waitFor({ state: 'visible' })`, `page.waitForURL`, or re-read a value until it changes (`esperarCondicion` in `CartPage`). Playwright's `isVisible()`/`isEnabled()` are instant snapshots that ignore `timeout` — use `waitFor(...).then(() => true).catch(() => false)` to probe for something that may appear.
+No `I.wait(n)` and no `waitForLoadState('networkidle')` (Liverpool's analytics keep the network busy forever). Wait for a direct consequence of the action: `waitFor({ state: 'visible' })`, `page.waitForURL`, or re-read a value until it changes (`esperarCondicion` in `utils/esperas.js`, used by `CartPage` and `ResultsPage.obtenerPrecios()`). Playwright's `isVisible()`/`isEnabled()` are instant snapshots that ignore `timeout` — use `waitFor(...).then(() => true).catch(() => false)` to probe for something that may appear.
 
 ## Tests against a live site
 
 - Sponsored products are excluded from PLP assertions (they ignore sort/filters).
-- Scenarios tagged `@pendiente` (TC-018 descending sort, TC-007/008/009 price-range filter) fail because of site behavior, not framework bugs; they are excluded from `npm test` and CI. Don't "fix" them by loosening assertions.
+- `@pendiente` marks scenarios that fail because of site behavior, not framework bugs; they are excluded from `npm test` and CI. None are pending today (TC-018 and TC-007/008/009 turned out to be framework bugs, see README "Limitaciones conocidas"). Don't "fix" a pending scenario by loosening its assertion, and confirm with a `scripts/` probe that the site is really at fault before tagging one.
 - Checkout/payment/registration (TC-050–067) are deliberately out of scope — do not automate them against production.
 - Cart assertions check **Subtotal**, not Total (Total already includes non-linear discounts).
 - Tag every scenario with its feature tag (`@busqueda`, `@filtros`, `@detalle`, `@carrito`) and `@TC-NNN` ids; `@smoke` marks the quick regression set.

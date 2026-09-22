@@ -2,6 +2,7 @@ const assert = require('assert')
 const { I } = inject()
 const BasePage = require('./BasePage')
 const { extraerPrecios, verificarOrden, preciosFueraDeRango } = require('../utils/precio')
+const { esperarCondicion } = require('../utils/esperas')
 
 const SELECTORES = {
   listaResultados: '#plp-page-card-product-list',
@@ -109,16 +110,11 @@ class ResultsPage extends BasePage {
   }
 
   /**
-   * Lee los precios realmente renderizados en la PLP, excluyendo publicidad.
+   * Una lectura de los precios renderizados en la PLP, excluyendo publicidad.
    */
-  async obtenerPrecios() {
-    await this.esperarCargaDeResultados()
-
+  async leerPrecios() {
     const textos = await this.obtenerTextosDeTarjetas()
     const organicas = textos.filter((texto) => !PATROCINADO.test(texto))
-    const descartadas = textos.length - organicas.length
-
-    I.say(`Tarjetas: ${textos.length} totales, ${descartadas} patrocinadas excluidas`)
 
     let precios = extraerPrecios(organicas)
 
@@ -127,15 +123,36 @@ class ResultsPage extends BasePage {
       precios = extraerPrecios(textosDePrecio)
     }
 
-    I.say(`Precios leídos de la PLP: [${precios.join(', ')}]`)
-    return precios
+    return { precios, total: textos.length, descartadas: textos.length - organicas.length }
+  }
+
+  /**
+   * Lee los precios de la PLP. Con `condicion`, relee hasta que se cumpla:
+   * tras ordenar o filtrar, la URL cambia ANTES de que el grid se
+   * re-renderice, y una lectura inmediata puede mezclar tarjetas viejas con
+   * nuevas. Si nunca se cumple devuelve la última lectura y la aserción del
+   * llamador reporta lo que realmente vio.
+   */
+  async obtenerPrecios(condicion = () => true) {
+    await this.esperarCargaDeResultados()
+
+    const lectura = await esperarCondicion(
+      () => this.leerPrecios(),
+      ({ precios }) => condicion(precios)
+    )
+
+    I.say(`Tarjetas: ${lectura.total} totales, ${lectura.descartadas} patrocinadas excluidas`)
+    I.say(`Precios leídos de la PLP: [${lectura.precios.join(', ')}]`)
+    return lectura.precios
   }
 
   /**
    * TC-016 / TC-017 / TC-018 — el ordenamiento realmente ordena.
    */
   async validarOrdenPorPrecio(direccion) {
-    const precios = await this.obtenerPrecios()
+    const precios = await this.obtenerPrecios(
+      (leidos) => leidos.length >= 2 && verificarOrden(leidos, direccion).ordenado
+    )
 
     assert.ok(
       precios.length >= 2,
@@ -151,7 +168,9 @@ class ResultsPage extends BasePage {
    * TC-009 — el filtro de precio realmente filtra.
    */
   async validarPreciosEnRango(minimo, maximo) {
-    const precios = await this.obtenerPrecios()
+    const precios = await this.obtenerPrecios(
+      (leidos) => leidos.length > 0 && preciosFueraDeRango(leidos, minimo, maximo).length === 0
+    )
 
     assert.ok(
       precios.length > 0,
